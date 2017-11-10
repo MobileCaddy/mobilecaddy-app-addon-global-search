@@ -80,10 +80,10 @@ An array of the configuration information so the controller can use it to update
 #### Example ####
 
 ```
-GlobalSearchService.search('John');
+//The word was inputted by the user in a search box
+var configInfo = GlobalSearchService.search(wordToSearch);
 
-//In the controller the broadcast is triggered by the service when it finishes
-//searching
+//In the controller the broadcast is triggered by the service when it finishes searching
 $rootScope.$on('globalSearchResult', function(event, args) {
         console.log("Results of the search", args.results);
 });
