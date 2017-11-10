@@ -1,0 +1,30 @@
+{
+  "name": "mobilecaddy-app-addon-global-search",
+  "version": "0.0.1",
+  "description": "AngularJS service used to look for an item in all the existing database tables and see the results in the UI, within a MobileCaddy application.",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "./scripts/postinstall.sh",
+    "test": "grunt karma"
+  },
+  "keywords": [
+    "Salesforce",
+    "MobileCaddy"
+  ],
+  "author": "MobileCaddy",
+  "license": "MIT",
+  "devDependencies": {
+    "angular": "^1.4.3",
+    "angular-mocks": "1.4.3",
+    "grunt": "^1.0.1",
+    "grunt-contrib-jshint": "^1.1.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-karma": "^2.0.0",
+    "jasmine-core": "^2.8.0",
+    "jit-grunt": "^0.10.0",
+    "karma": "^1.7.1",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-coverage": "^1.1.1",
+    "karma-jasmine": "^1.1.0"
+  }
+}
