@@ -15,9 +15,9 @@
   GlobalSearchService.$inject = ['$rootScope','devUtils', 'logger'];
 
   function GlobalSearchService($rootScope, devUtils, logger){
+    var maxItems;
     var encryptedStore;
     var config;
-
     return {
       setConfig: setConfig,
       search: search,
@@ -28,29 +28,40 @@
 
     /**
     * @function setConfig
-    * @param {[Object]} confObject
-    * @description
+    * @param {Object} confObject contains the config information of the tables
+    * to do a global search on
+    * @description Sets three global variables, the first for the max number of
+    * search results, the second to define if the items will be stored in the
+    * database (encrypted) or in local storage and the third for the config
+    * information
     */
     function setConfig(confObject){
+      maxItems = confObject.maxItems;
       encryptedStore = confObject.encrypted;
       config = confObject.config;
     }
 
     /**
     * @function search
-    * @param {String} str
-    * @return {[Object]}
-    * @description Gets the table information from the config variable and
-    * for each table it calls function searchTable with the inputed String
+    * @param {String} str it's the String that the user wants to search for in
+    * the database tables
+    * @return {[Object]} Array of Objects that have the config information of
+    * the tables, that the controller will use
+    * @description Gets the table information from the config variable,
+    * for each table it calls the function searchTable with the inputed String
+    * and returns the Array of config data to the controller. When the Promise
+    * in the function searchTable resolves or rejects, the result is broadcasted,
+    * so the controller can update its variables as necessary
     */
     function search(str){
       var confForController = [];
       config.forEach(function(configElement){
         confForController.push(setConfigForController(configElement));
         searchTable(configElement, str).then(function(resultsArray){
-          $rootScope.$broadcast('globalSearchResult', {table : configElement.table, results : resultsArray});
+          $rootScope.$broadcast('globalSearchResult',
+          {table : configElement.table, results : resultsArray});
         }, function(e) {
-          logger.error("global search service", e);
+          logger.error("Global Search Service", e);
         });
       });
       return confForController;
@@ -59,31 +70,38 @@
 
     /**
     * @function setConfigForController
-    * @param {Object} element
-    * @return {Object}
-    * @description
+    * @param {Object} element has the configuration information of a database
+    * table
+    * @return {Object} Object that has some of the elements of the config
+    * Object of a specific table
+    * @description generates an Object that has some elements of the config
+    * parameter of a specific table, to be used by the controller
     */
     function setConfigForController(element){
       var object = {};
       object.table = element.table;
       object.name = element.name;
       object.icon = element.icon;
-      object.fieldsToShow = element.fieldsToShow;
       return object;
     }
 
     /**
     * @function searchTable
-    * @param {Object} element
-    * @param {String} str
-    * @return {Promise}
-    * @description  Uses a smartSQL query from the devUtils API to find the
+    * @param {Object} element has the config information of the table on which
+    * the SOQL query will be performed
+    * @param {String} str it's the String that the user wants to search for in
+    * the database tables
+    * @return {Promise} resolves to a success with the Array of results, or
+    * rejects an error object
+    * @description Uses a smartSQL query from the devUtils API to find the
     * String parameter in any of the fields specified in the config information.
     * When it finishes the search it returns a promise that can have the
     * the records or a status if something unexpected happened.
     */
     function searchTable(element, str){
 
+      //These are not being used for the moment because the query only
+      //works when doing a SELECT * for now.
       var fieldsToShow = element.fieldsToShow.join(", ");
       var selectCondition = "";
       element.fieldsToShow.forEach(function(field, index){
@@ -113,8 +131,8 @@
         //{status: 101001, mc_add_status: "Contact__ap:Name},{Contact__ap:Email"} on browser and phone
         //var smartSql = "SELECT " + selectCondition + " from {" + element.table + "} WHERE " + whereCondition;
 
-
         console.log("smartSql", smartSql);
+
         devUtils.smartSql(smartSql).then(function(resObject) {
           if (resObject != undefined){
             var resultsArray = createResultsArray(resObject.records, element);
@@ -126,12 +144,26 @@
           if (resObject == undefined){
             reject([]);
           } else {
+            logger.error(resObject);
             reject(resObject);
           }
         });
       });
     }
 
+    /**
+    * @function createResultsArray
+    * @param {[Object]} results it's the array that has the result object(s) from
+    * the SOQL query
+    * @param {Object} configElement has the configuration information for the
+    * corresponding table of the result(s)
+    * @return {[Object]} array that contains data of the result object(s)
+    * @description creates an array of three objects for each result, one is the
+    * Id of the result, the second is a String that contains the concatenated
+    * fields to show from the result and the third is either the href that will
+    * be used when the item is clicked in the view or a status explaining why
+    * the href couldn't be created
+    **/
     function createResultsArray(results, configElement){
       var resultsArray = [];
       results.forEach(function(result){
@@ -146,6 +178,17 @@
       return resultsArray;
     }
 
+    /**
+    * @function setHref
+    * @param {Object} result represents the result object
+    * @param {String} href the href String with placeholders, that should be
+    * used when the result is clicked
+    * @return {String or Object} if the Id values are found on the object, then
+    * it returns the String with the href, if they weren't, then an object with
+    * the status is returned
+    * @description It adds an href element to the result object or a status
+    * element if an error occurred
+    **/
     function setHref(result, href){
       //Splitting the href String so I can have each part in a separate
       //position of an array.
@@ -172,7 +215,7 @@
         }
       });
 
-      //idValues are the actual Ids of the recent item
+      //idValues are the actual Ids of the result Object
       //It might be only one
       var idValues = [];
       var statusObj = {};
@@ -188,9 +231,9 @@
         }
       }
 
-      //If the Id values were found in the object, then we form
-      //the href String using the indexOfIds and the values in
-      //idValues
+      //If the status wasn't set, it means the Id values were found,
+      //so we form the href String using the indexOfIds and the values
+      //in idValues
       if (_.isEmpty(statusObj)){
         for (let i = 0; i < indexOfIds.length; i++){
           splitHref[indexOfIds[i]] = idValues[i];
@@ -204,12 +247,21 @@
       }
     }
 
+    /**
+    * @function findId
+    * @param {Object} object represents a result object of the globlal search
+    * @param {String} idName name of the placeholder containing an Id,
+    * e.g.: AccountId
+    * @return {String} value of the Id placeholder in the object
+    * @description Auxiliar function that searches through the object,
+    * to try to find the value of the corresponding idName
+    **/
     function findId(object, idName){
       var idValue = "";
-      //Searching for the idName in the keys of the item object
+      //Searching for the idName in the keys of the Object
       Object.keys(object).find((objKey) => {
         if (objKey === idName) {
-          //If the idName was found in the object, then save its value
+          //If the idName was found in the Object, then save its value
           idValue = object[objKey];
           //Stop searching after finding the element that meets the condition
           return true;
@@ -218,6 +270,17 @@
       return idValue;
     }
 
+    /**
+    * @function setString
+    * @param {Object} result represents the result object
+    * @param {[String]} fields each String is one field that should appear in
+    * the result String
+    * @return {String} the String that contains the result information,
+    * e.g. "Judy Smith, CEO"
+    * @description For each of the fields to show, it checks if the result
+    * has it and if it does, the value is concatenated with the previous values
+    * with a comma
+    **/
     function setString(result, fields){
       var resultString = "";
       fields.forEach(function(field, index){
@@ -234,6 +297,14 @@
       return resultString;
     }
 
+
+    /**
+    * @function getRecentSearches
+    * @return {[Object]} represents the most recent results clicked
+    * @description returns an Array with Objects representing the the most
+    * recent results clicked. If encryptedStore is false then it will be
+    * obtained from localStorage
+    **/
     function getRecentSearches(){
       if (encryptedStore === false){
         var recentSearches = JSON.parse(localStorage.getItem('recentSearches'));
@@ -245,11 +316,29 @@
       }
     }
 
+    /**
+    * @function addRecentSearch
+    * @param {Object} item contains the config information of the result
+    * @param {Object} result the result object that will be added
+    * @description Adds an item to the recent searches list. It can be added to
+    * the localStorage, if encryptedStore is false, or to the database otherwise.
+    * Any repeated item will be deleted before adding the same one. Also if the
+    * max number is reached the oldest item will be deleted.
+    **/
     function addRecentSearch(item, result){
-      var search = {};
-      search.icon = item.icon;
-      search.href = item.href;
-      search.result = result;
+      var maxRecentSearches;
+      if (maxItems === null) {
+        maxRecentSearches = 10;
+        maxItems = 10;
+      } else {
+        maxRecentSearches = maxItems;
+      }
+      var search = {
+        "icon": item.icon,
+        "href": item.href,
+        "result": result
+      };
+
       if (encryptedStore === false){
         var recentSearches = JSON.parse(localStorage.getItem("recentSearches"));
         if (recentSearches === null){
@@ -265,7 +354,16 @@
             return true;
           }
         });
+
+        //Add the new result to the list
         recentSearches.push(search);
+
+        //Checking the size of the list, because if it already has the
+        //maximum amount of items then we need to remove one, before pushing
+        //the new one
+        if (recentSearches.length > maxRecentSearches){
+          recentSearches.shift();
+        }
         localStorage.setItem("recentSearches", JSON.stringify(recentSearches));
       }
     }
