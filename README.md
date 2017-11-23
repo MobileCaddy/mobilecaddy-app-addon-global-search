@@ -89,3 +89,44 @@ $rootScope.$on('globalSearchResult', function(event, args) {
 });
 
 ```
+
+### getRecentSearches ###
+
+It returns an Array of Objects representing all the results clicked after doing a global search. If encryptedStore is false then it will be obtained from localStorage.
+
+#### Returns ####
+
+An Array of Objects representing all the results clicked after doing a global search.
+
+#### Example ####
+
+```
+var recentSearches = GlobalSearchService.getRecentSearches();
+console.log("Recent Searches Array: ", recentSearches);
+
+```
+
+### addRecentSearch ###
+
+Adds an item to the recent searches list. It can be added to the localStorage, if encryptedStore is false, or to the encrypted database otherwise. Any repeated item will be deleted before adding the same one. Also if the max number is reached the oldest item will be deleted.
+
+#### Parameters ####
+
+item : Object. Contains the config information of the result.
+
+result : Object. The result object that will be added.
+
+#### Example ####
+
+```
+var item = {
+  table: 'Account__ap',
+  name: 'Accounts',
+  icon: 'ion-folder',
+  results: [{Id: ab1, string: 'Account 1, UK', href: '/accounts/ab1'},
+            {Id: ab2, string: 'Account 2, UK', href: '/accounts/ab2'}]
+};
+var result = {Id: ab1, string: 'Account 1, UK', href: '/accounts/ab1'};
+GlobalSearchService.addRecentSearch(item, result);
+
+```
