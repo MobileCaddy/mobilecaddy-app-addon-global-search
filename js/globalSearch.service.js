@@ -168,6 +168,7 @@
       var resultsArray = [];
       results.forEach(function(result){
         var obtainedHref = setHref(result, configElement.href);
+        console.log("obtained href ", obtainedHref);
         var resultString = setString(result, configElement.fieldsToShow);
         if (obtainedHref.status === undefined){
           resultsArray.push({Id: result.Id, string: resultString, href: obtainedHref});
@@ -308,7 +309,7 @@
     function getRecentSearches(){
       if (encryptedStore === false){
         var recentSearches = JSON.parse(localStorage.getItem('recentSearches'));
-        if (recentSearches != null){
+        if (recentSearches !== null){
           return recentSearches.reverse();
         } else {
           return [];
