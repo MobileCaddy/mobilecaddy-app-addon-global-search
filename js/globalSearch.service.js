@@ -168,7 +168,6 @@
       var resultsArray = [];
       results.forEach(function(result){
         var obtainedHref = setHref(result, configElement.href);
-        console.log("obtained href ", obtainedHref);
         var resultString = setString(result, configElement.fieldsToShow);
         if (obtainedHref.status === undefined){
           resultsArray.push({Id: result.Id, string: resultString, href: obtainedHref});
