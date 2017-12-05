@@ -1,0 +1,55 @@
+<ion-view title="{{'GLOBAL_SEARCH' | translate}}" cache-view="false">
+
+  <ion-nav-buttons side="right">
+    <mc-sync-spinner></mc-sync-spinner>
+  </ion-nav-buttons>
+
+<ion-content>
+  <div class="item-input-inset">
+    <label class="item-input-wrapper">
+      <i class="icon ion-search placeholder-icon"></i>
+      <input id="searchBox" type="search" placeholder="Search" ng-model="vm.queryString">
+    </label>
+    <button class="button button-clear icon ion-close-round" ng-click="vm.clearSearch()"></button>
+    <button class="button button-clear icon ion-arrow-right-c" ng-click="vm.doSearch(vm.queryString)"></button>
+  </div>
+
+<div ng-show="!vm.searchDone &amp;&amp; vm.recentSearches.length > 0">
+  <h3 class="align-center">
+    {{'RECENT_SEARCHES' | translate}}
+  </h3>
+    <div class="list card" ng-show="!vm.searchDone">
+      <div class="item white-space detail" ng-repeat="item in vm.recentSearches" ng-click="vm.resultClicked(item, item.result)">
+          <span>
+            <i class="icon {{item.icon}}"></i>
+          {{item.result.string}}
+          </span>
+      </div>
+  </div>
+</div>
+
+
+<h3 class="align-center" ng-show="vm.searchDone">
+  {{'RESULTS' | translate}}
+</h3>
+<div ng-repeat="item in vm.configInfo" ng-show="vm.searchDone">
+  <h4 class="margin-left-10 detail">
+    <i class="icon {{item.icon}}"></i>
+    {{item.name}}
+  </h4>
+  <div class="list card">
+    <div class="item" ng-show="item.results == undefined">
+      {{'SEARCHING' | translate}}
+    </div>
+    <div class="item" ng-show="item.results.length == 0">
+      {{'NO_MATCHES' | translate}}
+    </div>
+    <div class="item white-space" ng-repeat="result in item.results" ng-click="vm.resultClicked(item, result)">
+        {{result.string}}
+    </div>
+  </div>
+</div>
+
+</ion-content>
+
+</ion-view>
