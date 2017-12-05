@@ -113,9 +113,9 @@
 
       var whereCondition = "";
       element.fieldsToQuery.forEach(function(field, index){
-        whereCondition += "{" + element.table + ":" + field + "} LIKE '%" + str + "%'";
+        whereCondition += "{" + element.table + ":" + field + "} LIKE '%" + str.toLocaleLowerCase() + "%'";
         if (index < element.fieldsToQuery.length - 1){
-          whereCondition += " or ";
+          whereCondition += " OR ";
         }
       });
 
