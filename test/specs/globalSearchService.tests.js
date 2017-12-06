@@ -137,7 +137,7 @@ describe('GlobalSearchService Unit Tests', function(){
     it('should search OK', function(done){
       var expectedCalls = 2;
       var currCalls = 0;
-      var expectedReturns = expectedCalls
+      var expectedReturns = expectedCalls;
       var currReturns = 0;
 
       devUtilsMock.smartSql.and.callFake(function(soql){
@@ -164,6 +164,6 @@ describe('GlobalSearchService Unit Tests', function(){
       });
 
     });
-  })
+  });
 
 });
