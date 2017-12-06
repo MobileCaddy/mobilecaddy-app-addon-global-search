@@ -15,6 +15,7 @@
   GlobalSearchService.$inject = ['$rootScope','devUtils', 'logger'];
 
   function GlobalSearchService($rootScope, devUtils, logger){
+    var logTag = "GlobalSearchService";
     var maxItems;
     var encryptedStore;
     var config;
@@ -23,7 +24,9 @@
       search: search,
       searchTable: searchTable,
       getRecentSearches: getRecentSearches,
-      addRecentSearch: addRecentSearch
+      addRecentSearch: addRecentSearch,
+      // Exposed for testing
+      _getConfig : function(){ return config;}
     };
 
     /**
@@ -61,7 +64,7 @@
           $rootScope.$broadcast('globalSearchResult',
           {table : configElement.table, results : resultsArray});
         }, function(e) {
-          logger.error("Global Search Service", e);
+          logger.error(logTag, e);
         });
       });
       return confForController;
@@ -141,10 +144,11 @@
             resolve([]);
           }
         }).catch(function(resObject){
+          console.error(logTag, resObject);
           if (resObject == undefined){
             reject([]);
           } else {
-            logger.error(resObject);
+            logger.error(logTag. resObject);
             reject(resObject);
           }
         });
@@ -218,7 +222,7 @@
       //idValues are the actual Ids of the result Object
       //It might be only one
       var idValues = [];
-      var statusObj = {};
+      var statusObj;
       for (let i = 0; i < idNames.length; i++){
         var id = findId(result,idNames[i]);
         if (id != ""){
@@ -231,10 +235,11 @@
         }
       }
 
+
       //If the status wasn't set, it means the Id values were found,
       //so we form the href String using the indexOfIds and the values
       //in idValues
-      if (_.isEmpty(statusObj)){
+      if (! statusObj){
         for (let i = 0; i < indexOfIds.length; i++){
           splitHref[indexOfIds[i]] = idValues[i];
         }
@@ -306,20 +311,21 @@
     * obtained from localStorage
     **/
     function getRecentSearches(){
-      if (encryptedStore === false){
+      // if (encryptedStore === false){
         var recentSearches = JSON.parse(localStorage.getItem('recentSearches'));
         if (recentSearches !== null){
           return recentSearches.reverse();
         } else {
           return [];
         }
-      }
+      // }
     }
 
     /**
     * @function addRecentSearch
     * @param {Object} item contains the config information of the result
-    * @param {Object} result the result object that will be added
+    *                      {icon, href}
+    * @param {Object} result the Salesforce object that will be added
     * @description Adds an item to the recent searches list. It can be added to
     * the localStorage, if encryptedStore is false, or to the database otherwise.
     * Any repeated item will be deleted before adding the same one. Also if the
@@ -339,7 +345,7 @@
         "result": result
       };
 
-      if (encryptedStore === false){
+      // if (encryptedStore === false){
         var recentSearches = JSON.parse(localStorage.getItem("recentSearches"));
         if (recentSearches === null){
           recentSearches = [];
@@ -365,7 +371,7 @@
           recentSearches.shift();
         }
         localStorage.setItem("recentSearches", JSON.stringify(recentSearches));
-      }
+      // }
     }
   }
 
