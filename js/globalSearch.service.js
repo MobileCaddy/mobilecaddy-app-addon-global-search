@@ -18,7 +18,7 @@
     var logTag = "GlobalSearchService";
     var maxItems;
     var encryptedStore;
-    var config;
+    var tableConfig;
     return {
       setConfig: setConfig,
       search: search,
@@ -26,7 +26,7 @@
       getRecentSearches: getRecentSearches,
       addRecentSearch: addRecentSearch,
       // Exposed for testing
-      _getConfig : function(){ return config;}
+      _getConfig : function(){ return tableConfig;}
     };
 
     /**
@@ -41,7 +41,7 @@
     function setConfig(confObject){
       maxItems = confObject.maxItems;
       encryptedStore = confObject.encrypted;
-      config = confObject.config;
+      tableConfig = confObject.tables;
     }
 
     /**
@@ -58,7 +58,7 @@
     */
     function search(str){
       var confForController = [];
-      config.forEach(function(configElement){
+      tableConfig.forEach(function(configElement){
         confForController.push(setConfigForController(configElement));
         searchTable(configElement, str).then(function(resultsArray){
           $rootScope.$broadcast('globalSearchResult',

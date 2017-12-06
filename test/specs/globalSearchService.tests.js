@@ -29,7 +29,7 @@ describe('GlobalSearchService Unit Tests', function(){
     GlobalSearchService.setConfig({
       maxItems: 10,
       encrypted: false,
-      config: [
+      tables: [
         {
           table: 'Account__ap',
           name: 'Accounts',

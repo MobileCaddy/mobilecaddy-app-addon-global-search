@@ -22,7 +22,7 @@ You can set the configuration information of the global search, to specify if th
 ```
 GlobalSearchService.setConfig({
     encrypted: false,
-    config: [
+    tables: [
       {
         table: 'Account__ap',
         name: 'Accounts',
@@ -30,40 +30,71 @@ GlobalSearchService.setConfig({
         fieldsToShow: ['Name', 'BillingCountry'],
         icon: 'ion-folder',
         href: '/accounts/:Id'
-     },
-     {
-       table: 'Contact__ap',
-       name: 'Contacts',
-       fieldsToQuery: ['Name', 'Title'],
-       fieldsToShow: ['Name', 'Email'],
-       icon: 'ion-person',
-       href: '/accounts/:AccountId/contacts/:Id'
-    }
-   ]
+      },
+      {
+        table: 'Contact__ap',
+        name: 'Contacts',
+        fieldsToQuery: ['Name', 'Title'],
+        fieldsToShow: ['Name', 'Email'],
+        icon: 'ion-person',
+        href: '/accounts/:AccountId/contacts/:Id'
+      }
+    ]
   });
 
 ```
 
-## Calls Available
+### Syntax
+```
+GlobalSearchService.setConfig({encrypted, tables});
+```
+
+### Parameters
+
+#### encrypted Optional
+
+Whether or not to use the encrypted database to store the recently clicked on search results. If _false_, stored in localStorage. Defaults to *false*. **Note: Not yet supported**.
+
+#### tables
+
+Array of objects configuring each table to be included in the global search, thus;
+```
+[{
+  table,          // string: Name of the mobilised table
+  name,           // string: Label to be shown in search output
+  fieldsToQuery,  // [string]: Array of field names to be queried
+  fieldsToShow,   // [string]: Array of field names to be used in search output
+  icons,          // string:  Ionicon to be used in search output
+  href            // string: State URL to be used for direct record access.
+}]
+```
 
 
-### search ###
+## API
+
+
+### search
 
 Calls an internal function for each table specified in the config information, that does the SOQL query to find the inputted word. Since the results are obtained asynchronously, when each call returns with a result it does a broadcast of the result so the controller can update the template appropriately.
 
-#### Parameters ####
+#### Syntax
+```
+search(str)
+```
 
-str : String. Represents the word inputted in the search box.
+
+#### Parameters
+
+**str**: string. Represents the word inputted in the search box.
 
 #### Returns ####
 
-An array of the configuration information so the controller can use it to update the UI, from the start, with the names of the tables, the icons, etc.
+The *tables* config, as input in configuration (above)
 
 #### Example ####
 
 ```
-//The word was inputted by the user in a search box
-var configInfo = GlobalSearchService.search(wordToSearch);
+GlobalSearchService.search("test");
 
 //In the controller the broadcast is triggered by the service when it finishes searching
 $rootScope.$on('globalSearchResult', function(event, args) {
@@ -72,9 +103,14 @@ $rootScope.$on('globalSearchResult', function(event, args) {
 
 ```
 
-### getRecentSearches ###
+### getRecentSearches
 
-It returns an Array of Objects representing all the results clicked after doing a global search. If encryptedStore is false then it will be obtained from localStorage.
+returns an Array of Objects representing all the results clicked after doing a global search. If encryptedStore is false then it will be obtained from localStorage.
+
+#### Syntax
+```
+getRecentSearches();
+```
 
 #### Returns ####
 
@@ -84,7 +120,6 @@ An Array of Objects representing all the results clicked after doing a global se
 
 ```
 var recentSearches = GlobalSearchService.getRecentSearches();
-console.log("Recent Searches Array: ", recentSearches);
 
 ```
 
@@ -94,9 +129,9 @@ Adds an item to the recent searches list. It can be added to the localStorage, i
 
 #### Parameters ####
 
-item : Object. Contains the config information of the result.
+**item** : object. Contains the config information of the result.
 
-result : Object. The result object that will be added.
+**result** : object. The result object that will be added.
 
 #### Example ####
 
