@@ -9,8 +9,11 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
 
     jshint: {
-      myFiles: [ 'js/*.*.js' ],
-      test:    [ 'test/specs/*.*.js' ]
+      myFiles: [ 'js/*.*.js'],
+      test:    [ 'test/specs/*.*.js' ],
+      options: {
+        esversion: 6
+      }
     },
 
     watch: {
